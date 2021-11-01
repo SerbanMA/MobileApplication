@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 import ro.ubb.sharednotes.domain.Note;
 import ro.ubb.sharednotes.repository.NoteRepository;
 
+import javax.transaction.Transactional;
 import java.util.List;
 
 @Service
@@ -14,5 +15,14 @@ public class NoteService {
 
     public List<Note> getAll() {
         return noteRepository.findAll();
+    }
+
+    public Note save(Note note) {
+        return noteRepository.save(note);
+    }
+
+    @Transactional
+    public Note update(Note note) {
+        return noteRepository.save(note);
     }
 }

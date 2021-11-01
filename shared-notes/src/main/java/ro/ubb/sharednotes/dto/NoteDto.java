@@ -6,12 +6,17 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
+import java.util.Date;
 
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
 @Builder
 public class NoteDto implements Serializable {
-    private Integer id;
+    private String id;
+    private String title;
     private String message;
+    private Boolean done;
+    private Integer characters;
+    private Date lastChange;
 }

@@ -9,7 +9,7 @@ public class UserConverter implements BaseConverter<UserDto, User> {
     @Override
     public UserDto convertModelToDto(User model) {
         return UserDto.builder()
-                .id(model.getId())
+                .id(model.getId().toString())
                 .email(model.getEmail())
                 .password(model.getPassword())
                 .firstName(model.getFirstName())
@@ -25,7 +25,7 @@ public class UserConverter implements BaseConverter<UserDto, User> {
                 .firstName(dto.getFirstName())
                 .lastName(dto.getLastName())
                 .build();
-        user.setId(dto.getId());
+        user.setId(Integer.getInteger(dto.getId()));
         return user;
     }
 }
