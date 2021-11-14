@@ -22,20 +22,20 @@ import '@ionic/react/css/display.css';
 
 /* Theme variables */
 import './theme/variables.css';
-import { ItemProvider } from './components/ItemProvider';
+import { NoteProvider } from './components/NoteProvider';
 
 const App: React.FC = () => (
   <IonApp>
-    <ItemProvider>
+    <NoteProvider>
       <IonReactRouter>
         <IonRouterOutlet>
-          <Route path="/items" component={ItemList} exact={true} />
-          <Route path="/item" component={ItemEdit} exact={true} />
-          <Route path="/item/:id" component={ItemEdit} exact={true} />
-          <Route exact path="/" render={() => <Redirect to="/items" />} />
+          <Route path="/notes" component={ItemList} exact={true} />
+          <Route path="/note" component={ItemEdit} exact={true} />
+          <Route path="/note/:id" component={ItemEdit} exact={true} />
+          <Route exact path="/" render={() => <Redirect to="/notes" />} />
         </IonRouterOutlet>
       </IonReactRouter>
-    </ItemProvider>
+    </NoteProvider>
   </IonApp>
 );
 

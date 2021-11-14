@@ -1,11 +1,11 @@
 import axios from 'axios';
 import { getLogger } from '../core';
-import { ItemProps } from './ItemProps';
+import { NoteProps } from './NoteProps';
 
-const log = getLogger('ItemApi');
+const log = getLogger('NoteApi');
 
 const baseUrl = 'localhost:8080';
-const itemUrl = `http://${baseUrl}/notes`;
+const noteUrl = `http://${baseUrl}/note`;
 
 interface ResponseProps<T> {
   data: T;
@@ -30,22 +30,22 @@ const config = {
   },
 };
 
-export const getItems: () => Promise<ItemProps[]> = () => {
-  return withLogs(axios.get(itemUrl, config), 'getItems');
+export const getNotes: () => Promise<NoteProps[]> = () => {
+  return withLogs(axios.get(`${noteUrl}s`, config), 'getNotes');
 };
 
-export const createItem: (item: ItemProps) => Promise<ItemProps[]> = (item) => {
-  return withLogs(axios.post(itemUrl, item, config), 'createItem');
+export const createNote: (note: NoteProps) => Promise<NoteProps[]> = (note) => {
+  return withLogs(axios.post(noteUrl, note, config), 'createNote');
 };
 
-export const updateItem: (item: ItemProps) => Promise<ItemProps[]> = (item) => {
-  return withLogs(axios.put(`${itemUrl}/${item.id}`, item, config), 'updateItem');
+export const updateNote: (note: NoteProps) => Promise<NoteProps[]> = (note) => {
+  return withLogs(axios.put(`${noteUrl}/${note.id}`, note, config), 'updateNote');
 };
 
 interface MessageData {
   event: string;
   payload: {
-    item: ItemProps;
+    note: NoteProps;
   };
 }
 

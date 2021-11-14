@@ -1,20 +1,20 @@
 import React, { useCallback, useEffect, useReducer } from 'react';
 import PropTypes from 'prop-types';
 import { getLogger } from '../core';
-import { ItemProps } from './ItemProps';
-import { createItem, getItems, newWebSocket, updateItem } from './ItemApi';
+import { NoteProps } from './NoteProps';
+import { createNote, getNotes, newWebSocket, updateNote } from './NoteApi';
 
-const log = getLogger('ItemProvider');
+const log = getLogger('NoteProvider');
 
-type SaveItemFn = (item: ItemProps) => Promise<any>;
+type SaveNoteFn = (note: NoteProps) => Promise<any>;
 
-export interface ItemsState {
-  items?: ItemProps[];
+export interface NotesState {
+  notes?: NoteProps[];
   fetching: boolean;
   fetchingError?: Error | null;
   saving: boolean;
   savingError?: Error | null;
-  saveItem?: SaveItemFn;
+  saveNote?: SaveNoteFn;
 }
 
 interface ActionProps {
@@ -22,7 +22,7 @@ interface ActionProps {
   payload?: any;
 }
 
-const initialState: ItemsState = {
+const initialState: NotesState = {
   fetching: false,
   saving: false,
 };
@@ -34,26 +34,26 @@ const SAVE_ITEM_STARTED = 'SAVE_ITEM_STARTED';
 const SAVE_ITEM_SUCCEEDED = 'SAVE_ITEM_SUCCEEDED';
 const SAVE_ITEM_FAILED = 'SAVE_ITEM_FAILED';
 
-const reducer: (state: ItemsState, action: ActionProps) => ItemsState = (state, { type, payload }) => {
+const reducer: (state: NotesState, action: ActionProps) => NotesState = (state, { type, payload }) => {
   switch (type) {
     case FETCH_ITEMS_STARTED:
       return { ...state, fetching: true, fetchingError: null };
     case FETCH_ITEMS_SUCCEEDED:
-      return { ...state, items: payload.items, fetching: false };
+      return { ...state, notes: payload.notes, fetching: false };
     case FETCH_ITEMS_FAILED:
       return { ...state, fetchingError: payload.error, fetching: false };
     case SAVE_ITEM_STARTED:
       return { ...state, savingError: null, saving: true };
     case SAVE_ITEM_SUCCEEDED:
-      const items = [...(state.items || [])];
-      const item = payload.item;
-      const index = items.findIndex((it) => it.id === item.id);
+      const notes = [...(state.notes || [])];
+      const note = payload.note;
+      const index = notes.findIndex((it) => it.id === note.id);
       if (index === -1) {
-        items.splice(0, 0, item);
+        notes.splice(0, 0, note);
       } else {
-        items[index] = item;
+        notes[index] = note;
       }
-      return { ...state, items, saving: false };
+      return { ...state, notes, saving: false };
     case SAVE_ITEM_FAILED:
       return { ...state, savingError: payload.error, saving: false };
     default:
@@ -61,54 +61,54 @@ const reducer: (state: ItemsState, action: ActionProps) => ItemsState = (state, 
   }
 };
 
-export const ItemContext = React.createContext<ItemsState>(initialState);
+export const NoteContext = React.createContext<NotesState>(initialState);
 
-interface ItemProviderProps {
+interface NoteProviderProps {
   children: PropTypes.ReactNodeLike;
 }
 
-export const ItemProvider: React.FC<ItemProviderProps> = ({ children }) => {
+export const NoteProvider: React.FC<NoteProviderProps> = ({ children }) => {
   const [state, dispatch] = useReducer(reducer, initialState);
-  const { items, fetching, fetchingError, saving, savingError } = state;
-  useEffect(getItemsEffect, []);
+  const { notes, fetching, fetchingError, saving, savingError } = state;
+  useEffect(getNotesEffect, []);
   useEffect(wsEffect, []);
-  const saveItem = useCallback<SaveItemFn>(saveItemCallback, []);
-  const value = { items, fetching, fetchingError, saving, savingError, saveItem };
+  const saveNote = useCallback<SaveNoteFn>(saveNoteCallback, []);
+  const value = { notes, fetching, fetchingError, saving, savingError, saveNote };
   log('returns');
-  return <ItemContext.Provider value={value}>{children}</ItemContext.Provider>;
+  return <NoteContext.Provider value={value}>{children}</NoteContext.Provider>;
 
-  function getItemsEffect() {
+  function getNotesEffect() {
     let canceled = false;
-    fetchItems();
+    fetchNotes();
     return () => {
       canceled = true;
     };
 
-    async function fetchItems() {
+    async function fetchNotes() {
       try {
-        log('fetchItems started');
+        log('fetchNotes started');
         dispatch({ type: FETCH_ITEMS_STARTED });
-        const items = await getItems();
-        log('fetchItems succeeded');
+        const notes = await getNotes();
+        log('fetchNotes succeeded');
         if (!canceled) {
-          dispatch({ type: FETCH_ITEMS_SUCCEEDED, payload: { items } });
+          dispatch({ type: FETCH_ITEMS_SUCCEEDED, payload: { notes } });
         }
       } catch (error) {
-        log('fetchItems failed');
+        log('fetchNotes failed');
         dispatch({ type: FETCH_ITEMS_FAILED, payload: { error } });
       }
     }
   }
 
-  async function saveItemCallback(item: ItemProps) {
+  async function saveNoteCallback(note: NoteProps) {
     try {
-      log('saveItem started');
+      log('saveNote started');
       dispatch({ type: SAVE_ITEM_STARTED });
-      const savedItem = await (item.id ? updateItem(item) : createItem(item));
-      log('saveItem succeeded');
-      dispatch({ type: SAVE_ITEM_SUCCEEDED, payload: { item: savedItem } });
+      const savedNote = await (note.id ? updateNote(note) : createNote(note));
+      log('saveNote succeeded');
+      dispatch({ type: SAVE_ITEM_SUCCEEDED, payload: { note: savedNote } });
     } catch (error) {
-      log('saveItem failed');
+      log('saveNote failed');
       dispatch({ type: SAVE_ITEM_FAILED, payload: { error } });
     }
   }
@@ -122,11 +122,11 @@ export const ItemProvider: React.FC<ItemProviderProps> = ({ children }) => {
       }
       const {
         event,
-        payload: { item },
+        payload: { note },
       } = message;
-      log(`ws message, item ${event}`);
+      log(`ws message, note ${event}`);
       if (event === 'created' || event === 'updated') {
-        dispatch({ type: SAVE_ITEM_SUCCEEDED, payload: { item } });
+        dispatch({ type: SAVE_ITEM_SUCCEEDED, payload: { note } });
       }
     });
     return () => {

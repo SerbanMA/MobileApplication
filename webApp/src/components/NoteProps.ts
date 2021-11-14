@@ -1,8 +1,8 @@
-export interface ItemProps {
+export interface NoteProps {
   id?: string;
   title: string;
   message: string;
-  done?: boolean;
+  done: boolean;
   lastChange?: Date;
   characters?: number;
 }

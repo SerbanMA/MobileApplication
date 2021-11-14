@@ -1,6 +1,6 @@
 {
-	"appId": "io.ionic.starter",
-	"appName": "webApp",
-	"webDir": "build",
-	"bundledWebRuntime": false
+  "appId": "io.ionic.starter",
+  "appName": "webApp",
+  "webDir": "build",
+  "bundledWebRuntime": false
 }
