@@ -75,7 +75,7 @@ const router = new Router();
 
 // getAll()
 router.get("/notes", (ctx) => {
-  const ifModifiedSince = ctx.request.get("If-Modif ied-Since");
+  const ifModifiedSince = ctx.request.get("If-Modified-Since");
   if (
     ifModifiedSince &&
     new Date(ifModifiedSince).getTime() >=
@@ -148,7 +148,7 @@ router.put("/note/:id", async (ctx) => {
   if (noteId && id !== note.id) {
     r;
     ctx.response.body = {
-      issue: [{ error: `Paam id and body id should be the same` }],
+      issue: [{ error: `Param id and body id should be the same` }],
     };
     ctx.response.status = 400; // BAD REQUEST
     return;
@@ -179,24 +179,10 @@ router.del("/note/:id", (ctx) => {
     notes.splice(index, 1);
     lastUpdated = new Date();
     broadcast({ event: "deleted", payload: { note } });
+    ctx.response.body = note;
   }
-  ctx.response.status = 204; // no content
+  ctx.response.status = 200; // OK
 });
-
-setInterval(() => {
-  lastUpdated = new Date();
-  lastId = `${parseInt(lastId) + 1}`;
-  const note = new Note({
-    id: lastId,
-    text: `note ${lastId}`,
-    date: lastUpdated,
-    version: 1,
-  });
-  notes.push(note);
-  console.log(`
-   ${note.text}`);
-  broadcast({ event: "created", payload: { note } });
-}, 150000);
 
 app.use(router.routes());
 app.use(router.allowedMethods());

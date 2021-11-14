@@ -4,6 +4,7 @@ import { NetworkStatus, Plugins } from '@capacitor/core/dist/esm';
 const { Network } = Plugins;
 
 const initialState = {
+  id: '0',
   connected: false,
   connectionType: 'unknown',
 };
@@ -22,7 +23,7 @@ export const useNetwork = () => {
     function handleNetworkStatusChange(status: NetworkStatus) {
       console.log('useNetwork - status change', status);
       if (!canceled) {
-        setNetworkStatus(status);
+        setNetworkStatus({ ...status, connected: true, id: '0' });
       }
     }
   }, []);

@@ -42,6 +42,10 @@ export const updateNote: (note: NoteProps) => Promise<NoteProps[]> = (note) => {
   return withLogs(axios.put(`${noteUrl}/${note.id}`, note, config), 'updateNote');
 };
 
+export const removeNote: (note: NoteProps) => Promise<NoteProps[]> = (note) => {
+  return withLogs(axios.delete(`${noteUrl}/${note.id}`, config), 'deleteNote');
+};
+
 interface MessageData {
   event: string;
   payload: {
