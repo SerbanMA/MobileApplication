@@ -17,7 +17,6 @@ app.use(async (ctx, next) => {
 });
 
 app.use(async (ctx, next) => {
-  await new Promise((resolve) => setTimeout(resolve, 2000));
   await next();
 });
 
@@ -75,7 +74,7 @@ const router = new Router();
 
 // getAll()
 router.get("/notes", (ctx) => {
-  const ifModifiedSince = ctx.request.get("If-Modified-Since");
+  const ifModifiedSince = ctx.request.get("If-Modif ied-Since");
   if (
     ifModifiedSince &&
     new Date(ifModifiedSince).getTime() >=
@@ -140,7 +139,7 @@ router.post("/note", async (ctx) => {
 });
 
 router.put("/note/:id", async (ctx) => {
-  const id = ctx.params.id;
+  const id = ctx.params.id + "";
   const note = ctx.request.body;
   note.lastChange = new Date();
   note.characters = note.message.length;
@@ -148,7 +147,7 @@ router.put("/note/:id", async (ctx) => {
   if (noteId && id !== note.id) {
     r;
     ctx.response.body = {
-      issue: [{ error: `Param id and body id should be the same` }],
+      issue: [{ error: `Paam id and body id should be the same` }],
     };
     ctx.response.status = 400; // BAD REQUEST
     return;
@@ -172,7 +171,7 @@ router.put("/note/:id", async (ctx) => {
 });
 
 router.del("/note/:id", (ctx) => {
-  const id = ctx.params.id;
+  const id = ctx.params.id + "";
   const index = notes.findIndex((note) => id === note.id);
   if (index !== -1) {
     const note = notes[index];
@@ -181,7 +180,7 @@ router.del("/note/:id", (ctx) => {
     broadcast({ event: "deleted", payload: { note } });
     ctx.response.body = note;
   }
-  ctx.response.status = 200; // OK
+  ctx.response.status = 204; // no content
 });
 
 app.use(router.routes());

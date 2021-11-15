@@ -27,9 +27,11 @@ const NoteList: React.FC<RouteComponentProps> = ({ history }) => {
         <IonLoading isOpen={fetching} message="Fetching notes" />
         {notes && (
           <IonList>
-            {notes.map(({ id, title, message, done, lastChange, characters }) => (
-              <Note key={id} id={id} title={title} message={message} done={done} lastChange={lastChange} characters={characters} onEdit={(id) => history.push(`/note/${id}`)} />
-            ))}
+            {notes
+              .sort((a, b) => Number(b.id) - Number(a.id))
+              .map(({ id, title, message, done, lastChange, characters }) => (
+                <Note key={id} id={id} title={title} message={message} done={done} lastChange={lastChange} characters={characters} onEdit={(id) => history.push(`/note/${id}`)} />
+              ))}
           </IonList>
         )}
         {fetchingError && <IonAlert isOpen={true} message={fetchingError?.message} buttons={['OK']} />}

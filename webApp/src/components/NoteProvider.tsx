@@ -72,7 +72,7 @@ const reducer: (state: NotesState, action: ActionProps) => NotesState = (state, 
     case DELETE_ITEM_STARTED:
       return { ...state, deleting: true, deletingError: null };
     case DELETE_ITEM_SUCCEEDED:
-      const dNotes = state.notes?.filter((item) => item.id !== payload.note.id);
+      const dNotes = state.notes?.filter((item) => item.id != payload.note.id);
       return { ...state, notes: dNotes, deleting: false };
     case DELETE_ITEM_FAILED:
       return { ...state, fetchingError: payload.error, fetching: false };
@@ -89,11 +89,14 @@ interface NoteProviderProps {
 
 export const NoteProvider: React.FC<NoteProviderProps> = ({ children }) => {
   var { networkStatus } = useNetwork();
+
   const [state, dispatch] = useReducer(reducer, initialState);
   const { notes, fetching, fetchingError, saving, savingError, deleting, deletingError } = state;
-  useEffect(getNotesEffect, [networkStatus]);
-  useEffect(wsEffect, [networkStatus]);
-  useEffect(handleNetwork, [networkStatus]);
+  useEffect(() => {
+    handleNetwork();
+    getNotesEffect();
+    wsEffect();
+  }, [networkStatus]);
   const saveNote = useCallback<SaveNoteFn>(saveNoteCallback, [networkStatus]);
   const deleteNote = useCallback<DeleteNoteFn>(deleteNoteCallback, [networkStatus]);
   const value = { notes, fetching, fetchingError, saving, savingError, deleting, deletingError, saveNote, deleteNote };
@@ -112,8 +115,7 @@ export const NoteProvider: React.FC<NoteProviderProps> = ({ children }) => {
 
     async function fetchNotes() {
       if (!networkStatus.connected) {
-        log('fetchNotes failed');
-        dispatch({ type: FETCH_ITEMS_FAILED, payload: { error: { message: 'Network Error' } } });
+        fetchNotesOffline();
         return;
       }
       try {
@@ -125,10 +127,28 @@ export const NoteProvider: React.FC<NoteProviderProps> = ({ children }) => {
           dispatch({ type: FETCH_ITEMS_SUCCEEDED, payload: { notes } });
         }
       } catch (error: any) {
+        if (isServerDown(error)) {
+          fetchNotesOffline();
+          return;
+        }
+
         log('fetchNotes failed');
         dispatch({ type: FETCH_ITEMS_FAILED, payload: { error } });
       }
     }
+  }
+
+  async function fetchNotesOffline() {
+    var notes: NoteProps[] = [];
+    const { keys } = await Storage.keys();
+
+    keys.forEach(async (key) => {
+      const { value: body } = await Storage.get({ key });
+      const note: NoteProps = JSON.parse(body || '');
+      notes.push(note);
+    });
+
+    dispatch({ type: FETCH_ITEMS_SUCCEEDED, payload: { notes: notes } });
   }
 
   async function saveNoteCallback(note: NoteProps) {
@@ -176,9 +196,9 @@ export const NoteProvider: React.FC<NoteProviderProps> = ({ children }) => {
     try {
       log('deleteNote started');
       dispatch({ type: DELETE_ITEM_STARTED });
-      const deletedNote = await removeNote(note);
+      await removeNote(note);
       log('deleteNote succeeded');
-      dispatch({ type: DELETE_ITEM_SUCCEEDED, payload: { note: deletedNote } });
+      dispatch({ type: DELETE_ITEM_SUCCEEDED, payload: { note } });
     } catch (error) {
       if (isServerDown(error)) {
         deleteNoteOfflineCallback(note);
@@ -240,9 +260,16 @@ export const NoteProvider: React.FC<NoteProviderProps> = ({ children }) => {
               deleteNoteCallback(note);
               break;
           }
-        });
 
-        Storage.clear();
+          await Storage.remove({ key });
+        });
+      } else {
+        notes?.forEach(async (note) => {
+          await Storage.set({
+            key: note.id || '0',
+            value: JSON.stringify({ ...note, action: 'save' }),
+          });
+        });
       }
     })();
   }
