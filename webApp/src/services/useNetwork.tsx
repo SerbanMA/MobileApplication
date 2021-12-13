@@ -1,11 +1,9 @@
 import { useEffect, useState } from 'react';
-import { NetworkStatus, Plugins } from '@capacitor/core/dist/esm';
-
-const { Network } = Plugins;
+import { Network } from '@capacitor/network';
 
 const initialState = {
   id: '0',
-  connected: false,
+  connected: true,
   connectionType: 'unknown',
 };
 
@@ -20,10 +18,10 @@ export const useNetwork = () => {
       handler.remove();
     };
 
-    function handleNetworkStatusChange(status: NetworkStatus) {
+    function handleNetworkStatusChange(status: any) {
       console.log('useNetwork - status change', status);
       if (!canceled) {
-        setNetworkStatus({ ...status, connected: true, id: '0' });
+        setNetworkStatus({ ...status, id: '0' });
       }
     }
   }, []);

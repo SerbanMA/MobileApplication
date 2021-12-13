@@ -4,7 +4,7 @@ import { NoteProps } from './NoteProps';
 
 const log = getLogger('NoteApi');
 
-const baseUrl = 'localhost:8080';
+const baseUrl = 'localhost:80';
 const noteUrl = `http://${baseUrl}/note`;
 
 interface ResponseProps<T> {
@@ -30,8 +30,12 @@ const config = {
   },
 };
 
-export const getNotes: () => Promise<NoteProps[]> = () => {
-  return withLogs(axios.get(`${noteUrl}s`, config), 'getNotes');
+export const getNotes: (title: string, type: string, page: number) => Promise<NoteProps[]> = (title, type, page) => {
+  return withLogs(axios.get(`${noteUrl}s?title=${title}&type=${type}&page=${page}`, config), 'getNotes');
+};
+
+export const getTypes: () => Promise<NoteProps[]> = () => {
+  return withLogs(axios.get(`${noteUrl}s/types`, config), 'getNotes');
 };
 
 export const createNote: (note: NoteProps) => Promise<NoteProps[]> = (note) => {

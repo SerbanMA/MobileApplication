@@ -6,6 +6,7 @@ const wss = new WebSocket.Server({ server });
 const Router = require("koa-router");
 const cors = require("koa-cors");
 const bodyparser = require("koa-bodyparser");
+const { log } = require("console");
 
 app.use(bodyparser());
 app.use(cors());
@@ -32,8 +33,9 @@ app.use(async (ctx, next) => {
 });
 
 class Note {
-  constructor({ id, title, message, done, lastChange, characters }) {
+  constructor({ id, type, title, message, done, lastChange, characters }) {
     this.id = id;
+    this.type = type;
     this.title = title;
     this.message = message;
     this.done = done;
@@ -44,11 +46,13 @@ class Note {
 
 // hard code
 const notes = [];
-for (let i = 0; i < 11; i++) {
+const types = ["", "shop list", "score table", "general note"];
+for (let i = 0; i < 110; i++) {
   var message = `Description ${i}`;
   notes.push(
     new Note({
       id: `${i}`,
+      type: types[i % 4],
       title: `Note ${i}`,
       message: message,
       done: true,
@@ -74,31 +78,26 @@ const router = new Router();
 
 // getAll()
 router.get("/notes", (ctx) => {
-  const ifModifiedSince = ctx.request.get("If-Modif ied-Since");
-  if (
-    ifModifiedSince &&
-    new Date(ifModifiedSince).getTime() >=
-      lastUpdated.getTime() - lastUpdated.getMilliseconds()
-  ) {
-    ctx.response.status = 304; // NOT MODIFIED
-    return;
-  }
-
-  console.log(lastUpdated);
-
-  const text = ctx.request.query.text;
+  const type = ctx.request.query.type;
+  const title = ctx.request.query.title;
   const page = parseInt(ctx.request.query.page) || 1;
+
   ctx.response.set("Last-Modified", lastUpdated.toUTCString());
+
+  console.log(type);
+
   const sortedNotes = notes
-    .filter((note) => (text ? note.text.indexOf(text) !== -1 : true))
+    .filter((note) => (type ? note.type === type : true))
+    .filter((note) => (title ? note.title.indexOf(title) !== -1 : true))
     .sort((n1, n2) => -(n1.lastChange.getTime() - n2.lastChange.getTime()));
   const offset = (page - 1) * pageSize;
-  // ctx.response.body = {
-  //   page,
-  //   notes: sortedNotes.slice(offset, offset + pageSize),
-  //   more: offset + pageSize < sortedNotes.length
-  // };
-  ctx.response.body = notes;
+
+  ctx.response.body = sortedNotes.slice(offset, offset + pageSize);
+  ctx.response.status = 200;
+});
+
+router.get("/notes/types", (ctx) => {
+  ctx.response.body = types;
   ctx.response.status = 200;
 });
 
@@ -128,6 +127,7 @@ const createNote = async (ctx) => {
   lastId = note.id;
   note.lastChange = new Date();
   note.characters = note.message.length;
+  note.done = true;
   notes.push(note);
   ctx.response.body = note;
   ctx.response.status = 201; // CREATED
@@ -141,6 +141,7 @@ router.post("/note", async (ctx) => {
 router.put("/note/:id", async (ctx) => {
   const id = ctx.params.id + "";
   const note = ctx.request.body;
+  note.done = true;
   note.lastChange = new Date();
   note.characters = note.message.length;
   const noteId = note.id;
@@ -186,4 +187,4 @@ router.del("/note/:id", (ctx) => {
 app.use(router.routes());
 app.use(router.allowedMethods());
 
-server.listen(8080);
+server.listen(80);
