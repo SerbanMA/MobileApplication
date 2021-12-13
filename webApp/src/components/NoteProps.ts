@@ -6,10 +6,10 @@ export interface NoteProps {
   done?: boolean;
   lastChange?: Date;
   characters?: number;
-  photo?: Photo;
+  photo?: Photography;
 }
 
-export interface Photo {
-  filepath: string;
+export interface Photography {
+  path: string;
   webPath?: string;
 }

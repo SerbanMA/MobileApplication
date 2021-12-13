@@ -33,7 +33,16 @@ app.use(async (ctx, next) => {
 });
 
 class Note {
-  constructor({ id, type, title, message, done, lastChange, characters }) {
+  constructor({
+    id,
+    type,
+    title,
+    message,
+    done,
+    lastChange,
+    characters,
+    photo,
+  }) {
     this.id = id;
     this.type = type;
     this.title = title;
@@ -41,6 +50,7 @@ class Note {
     this.done = done;
     this.lastChange = lastChange;
     this.characters = characters;
+    this.photo = photo;
   }
 }
 
@@ -58,6 +68,7 @@ for (let i = 0; i < 110; i++) {
       done: true,
       lastChange: new Date(Date.now() + i),
       characters: message.length,
+      photo: { path: "", webPath: "" },
     })
   );
 }
@@ -141,6 +152,7 @@ router.post("/note", async (ctx) => {
 router.put("/note/:id", async (ctx) => {
   const id = ctx.params.id + "";
   const note = ctx.request.body;
+  log(note);
   note.done = true;
   note.lastChange = new Date();
   note.characters = note.message.length;

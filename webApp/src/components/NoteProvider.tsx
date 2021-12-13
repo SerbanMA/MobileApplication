@@ -141,7 +141,7 @@ export const NoteProvider: React.FC<NoteProviderProps> = ({ children }) => {
   }, [networkStatus]);
   const saveNote = useCallback<SaveNoteFn>(saveNoteCallback, [networkStatus]);
   const deleteNote = useCallback<DeleteNoteFn>(deleteNoteCallback, [networkStatus]);
-  const loadMore = useCallback<SearchNextFn>(loadMoreCallback, []);
+  const loadMore = loadMoreCallback;
   const fetchTypes = useCallback<FetchTypeFn>(fetchTypesCallback, []);
   const setType = useCallback<SetTypeFn>(setTypeCallback, []);
   const setSearchKeyword = useCallback<SetTypeFn>(setSearchKeywordCallback, []);

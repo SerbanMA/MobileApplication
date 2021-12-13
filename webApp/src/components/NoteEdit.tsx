@@ -3,11 +3,12 @@ import { IonAlert, IonButton, IonButtons, IonContent, IonFab, IonFabButton, IonH
 import { getLogger } from '../core';
 import { NoteContext } from './NoteProvider';
 import { RouteComponentProps } from 'react-router';
-import { NoteProps } from './NoteProps';
-import { remove, arrowBack, camera, colorFill } from 'ionicons/icons';
+import { NoteProps, Photography } from './NoteProps';
+import { arrowBack, camera } from 'ionicons/icons';
 import { Camera, CameraResultType, CameraSource, Photo } from '@capacitor/camera';
 import { defineCustomElements } from '@ionic/pwa-elements/loader';
 import { Filesystem, Directory } from '@capacitor/filesystem';
+import { resultingClientExists } from 'workbox-core/_private';
 
 const log = getLogger('NoteEdit');
 
@@ -21,7 +22,8 @@ const NoteEdit: React.FC<NoteEditProps> = ({ history, match }) => {
   const [type, setType] = useState('');
   const [title, setTitle] = useState('');
   const [message, setMessage] = useState('');
-  const [photo, setPhoto] = useState({ filepath: '', webPath: '' });
+  const [photo, setPhoto] = useState<Photography>({ path: '', webPath: '' });
+  const [photoToShow, setPhotoToShow] = useState('');
   const [note, setNote] = useState<NoteProps>();
 
   var types = ['', 'shop list', 'score table', 'general note'];
@@ -30,17 +32,23 @@ const NoteEdit: React.FC<NoteEditProps> = ({ history, match }) => {
     log('useEffect');
     const routeId = match.params.id || '';
     const note = notes?.find((it) => it.id === routeId);
+
     setNote(note);
     if (note) {
       setType(note.type);
       setTitle(note.title);
       setMessage(note.message);
+      if (note.photo) setPhoto(note.photo);
     }
   }, [match.params.id, notes]);
 
   useEffect(() => {
     defineCustomElements(window);
   }, []);
+
+  useEffect(() => {
+    showPicture(photo);
+  }, [photo]);
 
   const handleSave = () => {
     const editedNote = note ? { ...note, type, title, message, done: false, photo } : { type, title, message, done: false, photo };
@@ -59,40 +67,37 @@ const NoteEdit: React.FC<NoteEditProps> = ({ history, match }) => {
       quality: 100,
     });
 
-    const fileName = new Date().getTime + '.jpeg';
+    const fileName = new Date().getTime() + '.jpeg';
     const savedFileImage = await savePicture(capturedPhoto, fileName);
+    setPhoto(savedFileImage);
   };
 
-  const savePicture = async (photo: Photo, fileName: string): Promise<Photo> => {
+  const savePicture = async (photo: Photo, fileName: string): Promise<Photography> => {
     const base64Data = await base64FromPath(photo.webPath!);
-    const savedFile = await Filesystem.writeFile({
+    await Filesystem.writeFile({
       path: fileName,
       data: base64Data,
       directory: Directory.Data,
     });
 
     return {
-      filepath: fileName,
+      path: fileName,
       webPath: photo.webPath,
     };
   };
 
-  async function base64FromPath(path: string): Promise<string> {
-    const response = await fetch(path);
-    const blob = await response.blob();
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onerror = reject;
-      reader.onload = () => {
-        if (typeof reader.result === 'string') {
-          resolve(reader.result);
-        } else {
-          reject('method did not return a string');
-        }
-      };
-      reader.readAsDataURL(blob);
-    });
-  }
+  const showPicture = (photo?: Photography): void => {
+    if (photo?.path) {
+      Filesystem.readFile({
+        path: photo.path || '',
+        directory: Directory.Data,
+      }).then((result) => {
+        console.log(result);
+
+        setPhotoToShow(`data:image/jpeg;base64,${result.data}`);
+      });
+    }
+  };
 
   log('render');
   return (
@@ -122,8 +127,8 @@ const NoteEdit: React.FC<NoteEditProps> = ({ history, match }) => {
           ))}
         </IonSelect>
 
-        <IonImg src={note?.photo?.webPath} />
-        <IonTextarea rows={29} value={message} onIonChange={(e) => setMessage(e.detail.value || '')} />
+        <img width={120} height={120} src={photoToShow} style={{ marginLeft: '20px', marginRight: '20px' }} />
+        <IonTextarea rows={23} value={message} onIonChange={(e) => setMessage(e.detail.value || '')} style={{ marginLeft: '10px', marginRight: '10px' }} />
         <IonLoading isOpen={saving} />
         <IonLoading isOpen={deleting} />
       </IonContent>
@@ -137,7 +142,20 @@ const NoteEdit: React.FC<NoteEditProps> = ({ history, match }) => {
 };
 
 export default NoteEdit;
-function base64FromPath(arg0: string) {
-  throw new Error('Function not implemented.');
-}
 
+export async function base64FromPath(path: string): Promise<string> {
+  const response = await fetch(path);
+  const blob = await response.blob();
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = reject;
+    reader.onload = () => {
+      if (typeof reader.result === 'string') {
+        resolve(reader.result);
+      } else {
+        reject('method did not return a string');
+      }
+    };
+    reader.readAsDataURL(blob);
+  });
+}
