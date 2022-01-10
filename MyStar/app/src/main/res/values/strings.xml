@@ -1,0 +1,28 @@
+<resources>
+    <string name="app_name">MyStar</string>
+
+    <string name="no_internet_connection">NO INTERNET CONNECTION ----- NO INTERNET CONNECTION ----- NO INTERNET CONNECTION ----- NO INTERNET CONNECTION ----- NO INTERNET CONNECTION</string>
+    <string name="update_title">- Update -</string>
+    <string name="create_title">- Create -</string>
+    <string name="name_subtitle">Name:</string>
+    <string name="name_hint">Name</string>
+    <string name="rating_subtitle">Rating:</string>
+    <string name="rating_hint">Rating</string>
+    <string name="favourite">Favourite</string>
+    <string name="delete">Delete</string>
+    <string name="save">Save</string>
+    <string name="login_hint">Username</string>
+    <string name="password_hint">Password</string>
+    <string name="login_text">Login</string>
+    <string name="register_text">Register</string>
+    <string name="logout">Logout</string>
+    <string name="add">Add</string>
+    <string name="name_string"><b>Name:</b> %1$s</string>
+    <string name="date_string"><b>Date:</b> %1$s</string>
+    <string name="rating_string"><b>Rating:</b> %1$s/10</string>
+    <string name="email_text">Email</string>
+    <string name="username_subtitle">Username:</string>
+    <string name="password_subtitle">Password:</string>
+    <string name="email_subtitle">Email:</string>
+
+</resources>

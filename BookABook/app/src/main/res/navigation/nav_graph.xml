@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/BookListFragment">
+
+    <fragment
+        android:id="@+id/FragmentLogin"
+        android:name="com.example.bookabook.auth.login.LoginFragment"
+        android:label="@string/login"
+        app:enterAnim="@anim/slide_in"
+        app:exitAnim="@anim/slide_out"
+        app:popEnterAnim="@anim/slide_in"
+        app:popExitAnim="@anim/slide_out"
+        tools:layout="@layout/fragment_login" />
+
+    <fragment
+        android:id="@+id/BookListFragment"
+        android:name="com.example.bookabook.todo.books.BookListFragment"
+        android:label="@string/item_list_fragment_label"
+        app:enterAnim="@anim/slide_in"
+        app:exitAnim="@anim/slide_out"
+        app:popEnterAnim="@anim/slide_in"
+        app:popExitAnim="@anim/slide_out"
+        tools:layout="@layout/fragment_item_list" >
+
+        <action
+            android:id="@+id/action_BookListFragment_to_BookEditFragment"
+            app:destination="@id/BookEditFragment"
+            app:enterAnim="@anim/fade_in"
+            app:exitAnim="@anim/fade_out"
+            app:popEnterAnim="@anim/fade_in"
+            app:popExitAnim="@anim/fade_out" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/BookEditFragment"
+        android:name="com.example.bookabook.todo.book.BookEditFragment"
+        android:label="@string/item_edit_fragment_label"
+        app:enterAnim="@anim/slide_in"
+        app:exitAnim="@anim/slide_out"
+        app:popEnterAnim="@anim/slide_in"
+        app:popExitAnim="@anim/slide_out"
+        tools:layout="@layout/fragment_item_edit" >
+
+        <action
+            android:id="@+id/action_BookEditFragment_to_BookListFragment"
+            app:destination="@id/BookListFragment"
+            app:enterAnim="@anim/fade_in"
+            app:exitAnim="@anim/fade_out"
+            app:popEnterAnim="@anim/fade_in"
+            app:popExitAnim="@anim/fade_out" />
+    </fragment>
+</navigation>
